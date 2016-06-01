@@ -92,7 +92,7 @@ struct ConfigDef ConnVars[] = {
     "File containing trusted CA certificates"
   },
 #endif
-  { "ssl_ciphers", DT_STRING, &C_SslCiphers, 0, 0, NULL,
+  { "ssl_ciphers", DT_STRING, &C_SslCiphers, IP "@SYSTEM", 0, NULL,
     "Ciphers to use when using SSL"
   },
   { "ssl_client_cert", DT_PATH|DT_PATH_FILE, &C_SslClientCert, 0, 0, NULL,
