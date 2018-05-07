@@ -78,6 +78,9 @@
 #ifdef ENABLE_NLS
 #include <libintl.h>
 #endif
+#ifdef USE_DEVEL_HELP
+#include "help/help.h"
+#endif
 
 /* These Config Variables are only used in mx.c */
 bool C_KeepFlagged; ///< Config: Don't move flagged messages from #C_Spoolfile to #C_Mbox
@@ -117,6 +120,9 @@ const struct MxOps *mx_ops[] = {
 #endif
 #ifdef USE_NNTP
   &MxNntpOps,
+#endif
+#ifdef USE_DEVEL_HELP
+  &MxHelpOps,
 #endif
 
   /* Local mailboxes */
@@ -1270,6 +1276,9 @@ int mx_check_empty(const char *path)
   {
     case MUTT_MBOX:
     case MUTT_MMDF:
+#ifdef USE_DEVEL_HELP
+    case MUTT_HELP:
+#endif
       return mutt_file_check_empty(path);
     case MUTT_MH:
       return mh_check_empty(path);

@@ -348,6 +348,22 @@ $(PWD)/history:
 	$(MKDIR_P) $(PWD)/history
 
 ###############################################################################
+# libhelp
+@if USE_DEVEL_HELP
+LIBHELP=	libhelp.a
+LIBHELPOBJS=	help/help.o
+CLEANFILES+=	$(LIBHELP) $(LIBHELPOBJS)
+MUTTLIBS+=	$(LIBHELP)
+ALLOBJS+=	$(LIBHELPOBJS)
+@endif
+
+$(LIBHELP): $(PWD)/help $(LIBHELPOBJS)
+	$(AR) cr $@ $(LIBHELPOBJS)
+	$(RANLIB) $@
+$(PWD)/help:
+	$(MKDIR_P) $(PWD)/help
+
+###############################################################################
 # libimap
 LIBIMAP=	libimap.a
 LIBIMAPOBJS=	imap/auth.o imap/auth_login.o imap/auth_oauth.o \
@@ -590,7 +606,7 @@ $(ALLOBJS):
 MUTTLIBS+=	$(LIBAUTOCRYPT) $(LIBPOP) $(LIBNNTP) $(LIBCOMPMBOX) \
 		$(LIBSTORE) $(LIBPATTERN) $(LIBGUI) $(LIBHELPBAR) $(LIBDEBUG) $(LIBMBOX) \
 		$(LIBNOTMUCH) $(LIBMAILDIR) $(LIBNCRYPT) $(LIBIMAP) $(LIBCONN) \
-		$(LIBHCACHE)  $(LIBCOMPRESS) $(LIBSIDEBAR) $(LIBBCACHE) \
+		$(LIBHCACHE) $(LIBHELP) $(LIBCOMPRESS) $(LIBSIDEBAR) $(LIBBCACHE) \
 		$(LIBHISTORY) $(LIBALIAS) $(LIBSEND) $(LIBCORE) $(LIBCONFIG) \
 		$(LIBEMAIL) $(LIBADDRESS) $(LIBMUTT)
 

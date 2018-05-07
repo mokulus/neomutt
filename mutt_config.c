@@ -261,6 +261,12 @@ struct ConfigDef MainVars[] = {
   { "header_color_partial", DT_BOOL|R_PAGER_FLOW, &C_HeaderColorPartial, false, 0, NULL,
     "Only colour the part of the header matching the regex"
   },
+  { "help", DT_BOOL|R_REFLOW, &C_Help, true, 0, NULL,
+  },
+#ifdef USE_DEVEL_HELP
+  { "help_doc_dir", DT_STRING|DT_PATH, &C_HelpDocDir, IP PKGDOCDIR "/help", 0, NULL,
+  },
+#endif
   { "hidden_tags", DT_SLIST|SLIST_SEP_COMMA, &C_HiddenTags, IP "unread,draft,flagged,passed,replied,attachment,signed,encrypted", 0, NULL,
     "Tags that shouldn't be displayed on screen"
   },
