@@ -928,21 +928,18 @@ static int help_doclist_parse(struct Mailbox *m)
 
   /* check (none strict) what the user wants to see */
   const char *request = help_path_transpose(mutt_b2s(&m->pathbuf), false);
-  m->emails[0]->read = false;
   if (request)
   {
     mutt_buffer_strcpy(&m->pathbuf, help_path_transpose(request, false)); /* just sanitise */
-    request += mutt_str_len(C_HelpDocDir) + 1;
-    for (size_t i = 0; i < m->msg_count; i++)
-    { /* TODO: prioritise folder (chapter/section) over root file names */
-      if (mutt_strn_equal(m->emails[i]->path, request, mutt_str_len(request)))
-      {
-        m->emails[0]->read = true;
-        m->emails[i]->read = false;
-        break;
-      }
-    }
   }
+
+  /* mark all but the first email as read */
+  m->emails[0]->read = false;
+  for (size_t i = 1; i < m->msg_count; i++)
+  {
+    m->emails[i]->read = true;
+  }
+  m->msg_unread = m->msg_count;
 
   return 0;
 }
