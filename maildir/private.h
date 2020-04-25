@@ -54,15 +54,15 @@ struct MaildirMboxData
 };
 
 /**
- * struct Maildir - A Maildir mailbox
+ * struct MaildirEmailData - Maildir-specific Email data - @extends Email
  */
-struct Maildir
+struct MaildirEmailData
 {
   struct Email *email;
   char *canon_fname;
   bool header_parsed : 1;
   ino_t inode;
-  struct Maildir *next;
+  struct MaildirEmailData *next;
 };
 
 typedef uint8_t MhSeqFlags;     ///< Flags, e.g. #MH_SEQ_UNSEEN
@@ -103,12 +103,12 @@ int             mh_msg_save_hcache (struct Mailbox *m, struct Email *e);
 
 /* Maildir/MH shared functions */
 void                    maildir_canon_filename (struct Buffer *dest, const char *src);
-void                    maildir_delayed_parsing(struct Mailbox *m, struct Maildir **md, struct Progress *progress);
+void                    maildir_delayed_parsing(struct Mailbox *m, struct MaildirEmailData **md, struct Progress *progress);
 size_t                  maildir_hcache_keylen  (const char *fn);
 struct MaildirMboxData *maildir_mdata_get      (struct Mailbox *m);
 int                     maildir_mh_open_message(struct Mailbox *m, struct Message *msg, int msgno, bool is_maildir);
-int                     maildir_move_to_mailbox(struct Mailbox *m, struct Maildir **ptr);
-int                     maildir_parse_dir      (struct Mailbox *m, struct Maildir ***last, const char *subdir, int *count, struct Progress *progress);
+int                     maildir_move_to_mailbox(struct Mailbox *m, struct MaildirEmailData **ptr);
+int                     maildir_parse_dir      (struct Mailbox *m, struct MaildirEmailData ***last, const char *subdir, int *count, struct Progress *progress);
 int                     md_commit_message      (struct Mailbox *m, struct Message *msg, struct Email *e);
 int                     mh_commit_msg          (struct Mailbox *m, struct Message *msg, struct Email *e, bool updseq);
 int                     mh_mkstemp             (struct Mailbox *m, FILE **fp, char **tgt);
@@ -118,7 +118,7 @@ MhSeqFlags              mhs_check              (struct MhSequences *mhs, int i);
 void                    mhs_sequences_free     (struct MhSequences *mhs);
 MhSeqFlags              mhs_set                (struct MhSequences *mhs, int i, MhSeqFlags f);
 mode_t                  mh_umask               (struct Mailbox *m);
-void                    mh_update_maildir      (struct Maildir *md, struct MhSequences *mhs);
+void                    mh_update_maildir      (struct MaildirEmailData *md, struct MhSequences *mhs);
 void                    mh_update_sequences    (struct Mailbox *m);
 bool                    mh_valid_message       (const char *s);
 

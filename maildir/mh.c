@@ -490,7 +490,7 @@ static int mh_mbox_check_stats(struct Mailbox *m, int flags)
  * @param md  Maildir to update
  * @param mhs Sequences
  */
-void mh_update_maildir(struct Maildir *md, struct MhSequences *mhs)
+void mh_update_maildir(struct MaildirEmailData *md, struct MhSequences *mhs)
 {
   int i;
 
@@ -599,8 +599,8 @@ int mh_mbox_check(struct Mailbox *m)
   struct stat st, st_cur;
   bool modified = false, occult = false, flags_changed = false;
   int num_new = 0;
-  struct Maildir *md = NULL, *p = NULL;
-  struct Maildir **last = NULL;
+  struct MaildirEmailData *md = NULL, *p = NULL;
+  struct MaildirEmailData **last = NULL;
   struct MhSequences mhs = { 0 };
   int count = 0;
   struct HashTable *fnames = NULL;

@@ -279,24 +279,24 @@ static void mh_sequences_add_one(struct Mailbox *m, int n, bool unseen, bool fla
 }
 
 /**
- * maildir_entry_new - Create a new Maildir entry
- * @retval ptr New Maildir entry
+ * maildir_edata_new - Create a new MaildirEmailData
+ * @retval ptr New MaildirEmailData
  */
-static struct Maildir *maildir_entry_new(void)
+static struct MaildirEmailData *maildir_edata_new(void)
 {
-  return mutt_mem_calloc(1, sizeof(struct Maildir));
+  return mutt_mem_calloc(1, sizeof(struct MaildirEmailData));
 }
 
 /**
- * maildir_entry_free - Free a Maildir object
- * @param[out] ptr Maildir to free
+ * maildir_edata_free - free MaildirHeader structure
+ * @param[out] ptr Private Email data
  */
-static void maildir_entry_free(struct Maildir **ptr)
+void maildir_edata_free(void **ptr)
 {
   if (!ptr || !*ptr)
     return;
 
-  struct Maildir *md = *ptr;
+  struct MaildirEmailData *md = *ptr;
   FREE(&md->canon_fname);
   email_free(&md->email);
 
@@ -307,17 +307,17 @@ static void maildir_entry_free(struct Maildir **ptr)
  * maildir_free - Free a Maildir list
  * @param[out] md Maildir list to free
  */
-static void maildir_free(struct Maildir **md)
+static void maildir_free(struct MaildirEmailData **md)
 {
   if (!md || !*md)
     return;
 
-  struct Maildir *p = NULL, *q = NULL;
+  struct MaildirEmailData *p = NULL, *q = NULL;
 
   for (p = *md; p; p = q)
   {
     q = p->next;
-    maildir_entry_free(&p);
+    maildir_edata_free((void **) &p);
   }
 }
 
@@ -362,13 +362,13 @@ static void maildir_update_mtime(struct Mailbox *m)
  * @retval -1 Error
  * @retval -2 Aborted
  */
-int maildir_parse_dir(struct Mailbox *m, struct Maildir ***last,
+int maildir_parse_dir(struct Mailbox *m, struct MaildirEmailData ***last,
                       const char *subdir, int *count, struct Progress *progress)
 {
   struct dirent *de = NULL;
   int rc = 0;
   bool is_old = false;
-  struct Maildir *entry = NULL;
+  struct MaildirEmailData *edata = NULL;
   struct Email *e = NULL;
 
   struct Buffer *buf = mutt_buffer_pool_get();
@@ -422,11 +422,11 @@ int maildir_parse_dir(struct Mailbox *m, struct Maildir ***last,
     else
       e->path = mutt_str_dup(de->d_name);
 
-    entry = maildir_entry_new();
-    entry->email = e;
-    entry->inode = de->d_ino;
-    **last = entry;
-    *last = &entry->next;
+    edata = maildir_edata_new();
+    edata->email = e;
+    edata->inode = de->d_ino;
+    **last = edata;
+    *last = &edata->next;
   }
 
   closedir(dirp);
@@ -450,12 +450,12 @@ cleanup:
  * @retval num Number of new emails
  * @retval 0   Error
  */
-int maildir_move_to_mailbox(struct Mailbox *m, struct Maildir **ptr)
+int maildir_move_to_mailbox(struct Mailbox *m, struct MaildirEmailData **ptr)
 {
   if (!m)
     return 0;
 
-  struct Maildir *md = *ptr;
+  struct MaildirEmailData *md = *ptr;
   int oldmsgcount = m->msg_count;
 
   for (; md; md = md->next)
@@ -508,7 +508,7 @@ size_t maildir_hcache_keylen(const char *fn)
  * @retval  0 a and b are identical
  * @retval  1 b precedes a
  */
-static int md_cmp_inode(struct Maildir *a, struct Maildir *b)
+static int md_cmp_inode(struct MaildirEmailData *a, struct MaildirEmailData *b)
 {
   return a->inode - b->inode;
 }
@@ -521,7 +521,7 @@ static int md_cmp_inode(struct Maildir *a, struct Maildir *b)
  * @retval  0 a and b are identical
  * @retval  1 b precedes a
  */
-static int md_cmp_path(struct Maildir *a, struct Maildir *b)
+static int md_cmp_path(struct MaildirEmailData *a, struct MaildirEmailData *b)
 {
   return strcmp(a->email->path, b->email->path);
 }
@@ -533,11 +533,12 @@ static int md_cmp_path(struct Maildir *a, struct Maildir *b)
  * @param cmp     Comparison function for sorting
  * @retval ptr Merged Maildir
  */
-static struct Maildir *maildir_merge_lists(struct Maildir *left, struct Maildir *right,
-                                           int (*cmp)(struct Maildir *, struct Maildir *))
+static struct MaildirEmailData *
+maildir_merge_lists(struct MaildirEmailData *left, struct MaildirEmailData *right,
+                    int (*cmp)(struct MaildirEmailData *, struct MaildirEmailData *))
 {
-  struct Maildir *head = NULL;
-  struct Maildir *tail = NULL;
+  struct MaildirEmailData *head = NULL;
+  struct MaildirEmailData *tail = NULL;
 
   if (left && right)
   {
@@ -594,12 +595,13 @@ static struct Maildir *maildir_merge_lists(struct Maildir *left, struct Maildir 
  * @param cmp     Comparison function for sorting
  * @retval ptr Sort Maildir list
  */
-static struct Maildir *maildir_ins_sort(struct Maildir *list,
-                                        int (*cmp)(struct Maildir *, struct Maildir *))
+static struct MaildirEmailData *
+maildir_ins_sort(struct MaildirEmailData *list,
+                 int (*cmp)(struct MaildirEmailData *, struct MaildirEmailData *))
 {
-  struct Maildir *tmp = NULL, *last = NULL, *back = NULL;
+  struct MaildirEmailData *tmp = NULL, *last = NULL, *back = NULL;
 
-  struct Maildir *ret = list;
+  struct MaildirEmailData *ret = list;
   list = list->next;
   ret->next = NULL;
 
@@ -629,11 +631,12 @@ static struct Maildir *maildir_ins_sort(struct Maildir *list,
  * @param cmp     Comparison function for sorting
  * @retval ptr Sort Maildir list
  */
-static struct Maildir *maildir_sort(struct Maildir *list, size_t len,
-                                    int (*cmp)(struct Maildir *, struct Maildir *))
+static struct MaildirEmailData *
+maildir_sort(struct MaildirEmailData *list, size_t len,
+             int (*cmp)(struct MaildirEmailData *, struct MaildirEmailData *))
 {
-  struct Maildir *left = list;
-  struct Maildir *right = list;
+  struct MaildirEmailData *left = list;
+  struct MaildirEmailData *right = list;
   size_t c = 0;
 
   if (!list || !list->next)
@@ -668,7 +671,7 @@ static struct Maildir *maildir_sort(struct Maildir *list, size_t len,
  *
  * Currently only defined for MH where files are numbered.
  */
-static void mh_sort_natural(struct Mailbox *m, struct Maildir **md)
+static void mh_sort_natural(struct Mailbox *m, struct MaildirEmailData **md)
 {
   if (!m || !md || !*md || (m->type != MUTT_MH) || (C_Sort != SORT_ORDER))
     return;
@@ -682,7 +685,8 @@ static void mh_sort_natural(struct Mailbox *m, struct Maildir **md)
  * @param[out] last Previous Maildir
  * @retval ptr Next Maildir
  */
-static struct Maildir *skip_duplicates(struct Maildir *p, struct Maildir **last)
+static struct MaildirEmailData *skip_duplicates(struct MaildirEmailData *p,
+                                                struct MaildirEmailData **last)
 {
   /* Skip ahead to the next non-duplicate message.
    *
@@ -707,9 +711,10 @@ static struct Maildir *skip_duplicates(struct Maildir *p, struct Maildir **last)
  * @param[out] md Maildir to parse
  * @param[in]  progress Progress bar
  */
-void maildir_delayed_parsing(struct Mailbox *m, struct Maildir **md, struct Progress *progress)
+void maildir_delayed_parsing(struct Mailbox *m, struct MaildirEmailData **md,
+                             struct Progress *progress)
 {
-  struct Maildir *p = NULL, *last = NULL;
+  struct MaildirEmailData *p = NULL, *last = NULL;
   char fn[PATH_MAX];
   int count;
   bool sort = false;
@@ -822,9 +827,9 @@ int mh_read_dir(struct Mailbox *m, const char *subdir)
   if (!m)
     return -1;
 
-  struct Maildir *md = NULL;
+  struct MaildirEmailData *md = NULL;
   struct MhSequences mhs = { 0 };
-  struct Maildir **last = NULL;
+  struct MaildirEmailData **last = NULL;
   struct Progress progress;
 
   if (m->verbose)
