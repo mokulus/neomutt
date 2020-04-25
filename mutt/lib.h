@@ -52,6 +52,7 @@
  * | mutt/slist.c     | @subpage slist     |
  * | mutt/signal.c    | @subpage signal    |
  * | mutt/string.c    | @subpage string    |
+ * | mutt/vector.c    | @subpage vector    |
  *
  * @note The library is self-contained -- some files may depend on others in
  *       the library, but none depends on source from outside.
@@ -89,6 +90,7 @@
 #include "signal2.h"
 #include "slist.h"
 #include "string2.h"
+#include "vector.h"
 // IWYU pragma: end_exports
 
 #endif /* MUTT_MUTT_LIB_H */
