@@ -41,6 +41,10 @@ extern bool  C_PgpAutoDecode;
 extern bool  C_UncollapseJump;
 extern bool  C_UncollapseNew;
 
+#ifdef USE_DEVEL_WIDESCREEN
+extern bool C_DevelIndexWidescreen;
+#endif
+
 int  index_color(int line);
 void index_make_entry(char *buf, size_t buflen, struct Menu *menu, int line);
 void mutt_draw_statusline(int cols, const char *buf, size_t buflen);

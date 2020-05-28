@@ -44,6 +44,7 @@
 #include "lib.h"
 #include "context.h"
 #include "format_flags.h"
+#include "index.h"
 #include "mutt_globals.h"
 #include "mutt_menu.h"
 #include "muttlib.h"
@@ -1096,9 +1097,10 @@ void sb_win_init(struct MuttWindow *dlg)
   struct MuttWindow *pager_panel = TAILQ_FIRST(&dlg->children);
   mutt_window_remove_child(dlg, pager_panel);
 
-  struct MuttWindow *cont_right =
-      mutt_window_new(WT_CONTAINER, MUTT_WIN_ORIENT_VERTICAL, MUTT_WIN_SIZE_MAXIMISE,
-                      MUTT_WIN_SIZE_UNLIMITED, MUTT_WIN_SIZE_UNLIMITED);
+  struct MuttWindow *cont_right = mutt_window_new(WT_CONTAINER,
+      C_DevelIndexWidescreen ? MUTT_WIN_ORIENT_HORIZONTAL :
+      MUTT_WIN_ORIENT_VERTICAL, MUTT_WIN_SIZE_MAXIMISE,
+      MUTT_WIN_SIZE_UNLIMITED, MUTT_WIN_SIZE_UNLIMITED);
   dlg->focus = cont_right;
 
   mutt_window_add_child(cont_right, index_panel);

@@ -104,6 +104,10 @@ char *C_MarkMacroPrefix; ///< Config: Prefix for macros using '<mark-message>'
 bool C_UncollapseJump; ///< Config: When opening a thread, jump to the next unread message
 bool C_UncollapseNew; ///< Config: Open collapsed threads when new mail arrives
 
+#ifdef USE_DEVEL_WIDESCREEN
+bool C_DevelIndexWidescreen; ///< Config: Use Widescreen mode for the index
+#endif
+
 /// Help Bar for the Index dialog
 static const struct Mapping IndexHelp[] = {
   // clang-format off
@@ -4039,13 +4043,24 @@ int mutt_reply_observer(struct NotifyCallback *nc)
  * create_panel_index - Create the Windows for the Index panel
  * @param parent        Parent Window
  * @param status_on_top true, if the Index bar should be on top
+ * @param widescreen    true, if using widescreen mode
  * @retval ptr Nested Windows
  */
-static struct MuttWindow *create_panel_index(struct MuttWindow *parent, bool status_on_top)
+static struct MuttWindow *create_panel_index(struct MuttWindow *parent,
+                                             bool status_on_top, bool widescreen)
 {
-  struct MuttWindow *panel_index =
-      mutt_window_new(WT_CONTAINER, MUTT_WIN_ORIENT_VERTICAL, MUTT_WIN_SIZE_MAXIMISE,
-                      MUTT_WIN_SIZE_UNLIMITED, MUTT_WIN_SIZE_UNLIMITED);
+  struct MuttWindow *panel_index = NULL;
+
+  if (widescreen)
+  {
+    panel_index = mutt_window_new(WT_CONTAINER, MUTT_WIN_ORIENT_VERTICAL, MUTT_WIN_SIZE_MAXIMISE,
+                                  MUTT_WIN_SIZE_UNLIMITED, MUTT_WIN_SIZE_UNLIMITED);
+  }
+  else
+  {
+    panel_index = mutt_window_new(WT_CONTAINER, MUTT_WIN_ORIENT_VERTICAL,
+                                  MUTT_WIN_SIZE_MINIMISE, 0, 0);
+  }
   parent->focus = panel_index;
 
   struct MuttWindow *win_index =
@@ -4118,7 +4133,7 @@ struct MuttWindow *index_pager_init(void)
                       MUTT_WIN_SIZE_UNLIMITED, MUTT_WIN_SIZE_UNLIMITED);
   notify_observer_add(NeoMutt->notify, NT_CONFIG, mutt_dlgindex_observer, dlg);
 
-  mutt_window_add_child(dlg, create_panel_index(dlg, C_StatusOnTop));
+  mutt_window_add_child(dlg, create_panel_index(dlg, C_StatusOnTop, C_DevelIndexWidescreen));
   mutt_window_add_child(dlg, create_panel_pager(dlg, C_StatusOnTop));
 
   return dlg;
@@ -4198,6 +4213,32 @@ int mutt_dlgindex_observer(struct NotifyCallback *nc)
 
       win_index->parent->size = MUTT_WIN_SIZE_MAXIMISE;
       win_index->parent->state.visible = true;
+    }
+  }
+
+  if (mutt_str_equal(ec->name, "devel_index_widescreen"))
+  {
+    struct MuttWindow *panel_index = win_index->parent;
+    struct MuttWindow *cont_right = panel_index->parent;
+    if (C_DevelIndexWidescreen)
+    {
+      panel_index->size = MUTT_WIN_SIZE_MAXIMISE;
+      panel_index->req_cols = MUTT_WIN_SIZE_UNLIMITED;
+      panel_index->req_rows = MUTT_WIN_SIZE_UNLIMITED;
+
+      cont_right->orient = MUTT_WIN_ORIENT_HORIZONTAL;
+
+      win_index->req_rows = MUTT_WIN_SIZE_UNLIMITED;
+    }
+    else
+    {
+      panel_index->size = MUTT_WIN_SIZE_MINIMISE;
+      panel_index->req_cols = 0;
+      panel_index->req_rows = 0;
+
+      cont_right->orient = MUTT_WIN_ORIENT_VERTICAL;
+
+      win_index->req_rows = C_PagerIndexLines;
     }
   }
 
