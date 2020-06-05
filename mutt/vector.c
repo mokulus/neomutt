@@ -100,7 +100,7 @@ void vector_append(struct Vector *v, void *item)
   if (v->size >= v->capa)
   {
     v->capa = (v->capa == 0) ? VECTOR_INIT_CAPACITY : (v->capa * 2);
-    mutt_mem_realloc(v->data, v->capa * v->item_size);
+    mutt_mem_realloc(&v->data, v->capa * v->item_size);
   }
 
   v->data[v->size] = item;
