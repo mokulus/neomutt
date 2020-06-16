@@ -214,11 +214,11 @@ static int slist_string_plus_equals(const struct ConfigSet *cs, void *var,
 
   if (slist_is_member(list, value))
     return rc |= CSR_SUC_NO_CHANGE; // return no change
+
+  if (!list)
+    list = slist_parse(value, cdef->type);
   else
-    if (!list)
-      list = slist_parse(value, cdef->type);
-    else
-      slist_add_string(list, value); // add value to list
+    slist_add_string(list, value); // add value to list
 
   if (cdef->validator)
   {
@@ -257,9 +257,9 @@ static int slist_string_minus_equals(const struct ConfigSet *cs, void *var,
 
   if (!list)
     return rc |= CSR_SUC_NO_CHANGE; // return no change
-  else
-    if (slist_is_member(list, value))
-      slist_remove_string(list, value); // remove value from list
+
+  if (slist_is_member(list, value))
+    slist_remove_string(list, value); // remove value from list
 
   if (cdef->validator)
   {
