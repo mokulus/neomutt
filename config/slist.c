@@ -210,35 +210,34 @@ static int slist_string_plus_equals(const struct ConfigSet *cs, void *var,
   if (value && (value[0] == '\0'))
     return rc |= CSR_SUC_NO_CHANGE; // return no change
 
-  struct Slist *list = *(struct Slist **) var;
-  struct Slist *orig = slist_dup(list);
+  struct Slist *orig = *(struct Slist **) var;
+  struct Slist *copy = slist_dup(orig);
 
-  if (slist_is_member(list, value))
+  if (slist_is_member(copy, value))
     return rc |= CSR_SUC_NO_CHANGE; // return no change
 
-  if (!list)
+  if (!copy)
   {
-    //list = slist_parse(value, cdef->type);
-    mutt_list_insert_tail(&list->head, mutt_str_dup(value));
-    list->count++;
+    mutt_list_insert_tail(&copy->head, mutt_str_dup(value));
+    copy->count++;
   }
   else
-    slist_add_string(list, value); // add value to list
+    slist_add_string(copy, value); // add value to list
 
   if (cdef->validator)
   {
-    rc = cdef->validator(cs, cdef, (intptr_t) list, err);
+    rc = cdef->validator(cs, cdef, (intptr_t) copy, err);
 
     if (CSR_RESULT(rc) != CSR_SUCCESS)
     {
-      slist_free(&list);
+      slist_free(&copy);
       *(struct Slist **) var = orig;
       return (rc | CSR_INV_VALIDATOR);
     }
   }
 
   slist_free(&orig);
-  *(struct Slist **) var = list;
+  *(struct Slist **) var = copy;
 
   return rc;
 }
@@ -260,29 +259,29 @@ static int slist_string_minus_equals(const struct ConfigSet *cs, void *var,
     return rc |= CSR_SUC_NO_CHANGE; // return no change
 
 
-  struct Slist *list = *(struct Slist **) var;
-  struct Slist *orig = slist_dup(list);
+  struct Slist *orig = *(struct Slist **) var;
+  struct Slist *copy = slist_dup(orig);
 
-  if (!list)
+  if (!copy)
     return rc |= CSR_SUC_NO_CHANGE; // return no change
 
-  if (slist_is_member(list, value))
-    slist_remove_string(list, value); // remove value from list
+  if (slist_is_member(copy, value))
+    slist_remove_string(copy, value); // remove value from list
 
   if (cdef->validator)
   {
-    rc = cdef->validator(cs, cdef, (intptr_t) list, err);
+    rc = cdef->validator(cs, cdef, (intptr_t) copy, err);
 
     if (CSR_RESULT(rc) != CSR_SUCCESS)
     {
-      slist_free(&list);
+      slist_free(&copy);
       *(struct Slist **) var = orig;
       return (rc | CSR_INV_VALIDATOR);
     }
   }
 
   slist_free(&orig);
-  *(struct Slist **) var = list;
+  *(struct Slist **) var = copy;
 
   return rc;
 }
