@@ -211,12 +211,17 @@ static int slist_string_plus_equals(const struct ConfigSet *cs, void *var,
     return rc |= CSR_SUC_NO_CHANGE; // return no change
 
   struct Slist *list = *(struct Slist **) var;
+  struct Slist *orig = slist_dup(list);
 
   if (slist_is_member(list, value))
     return rc |= CSR_SUC_NO_CHANGE; // return no change
 
   if (!list)
-    list = slist_parse(value, cdef->type);
+  {
+    //list = slist_parse(value, cdef->type);
+    mutt_list_insert_tail(&list->head, mutt_str_dup(value));
+    list->count++;
+  }
   else
     slist_add_string(list, value); // add value to list
 
@@ -227,10 +232,12 @@ static int slist_string_plus_equals(const struct ConfigSet *cs, void *var,
     if (CSR_RESULT(rc) != CSR_SUCCESS)
     {
       slist_free(&list);
+      *(struct Slist **) var = orig;
       return (rc | CSR_INV_VALIDATOR);
     }
   }
 
+  slist_free(&orig);
   *(struct Slist **) var = list;
 
   return rc;
@@ -254,6 +261,7 @@ static int slist_string_minus_equals(const struct ConfigSet *cs, void *var,
 
 
   struct Slist *list = *(struct Slist **) var;
+  struct Slist *orig = slist_dup(list);
 
   if (!list)
     return rc |= CSR_SUC_NO_CHANGE; // return no change
@@ -268,10 +276,12 @@ static int slist_string_minus_equals(const struct ConfigSet *cs, void *var,
     if (CSR_RESULT(rc) != CSR_SUCCESS)
     {
       slist_free(&list);
+      *(struct Slist **) var = orig;
       return (rc | CSR_INV_VALIDATOR);
     }
   }
 
+  slist_free(&orig);
   *(struct Slist **) var = list;
 
   return rc;
