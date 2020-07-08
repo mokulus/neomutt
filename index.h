@@ -33,6 +33,16 @@ struct Menu;
 struct MuttWindow;
 struct NotifyCallback;
 
+struct IndexEvent
+{
+  struct Email *current_email;
+};
+
+enum NotifyIndex
+{
+  NT_USER_EMAIL_SELECTED = 1,   ///< A new mail is selected
+};
+
 /* These Config Variables are only used in index.c */
 extern bool  C_ChangeFolderNext;
 extern bool  C_CollapseAll;
