@@ -1019,7 +1019,7 @@ void mutt_menu_add_dialog_row(struct Menu *menu, const char *row)
  * get_current_menu - Get the current Menu
  * @retval ptr Current Menu
  */
-static struct Menu *get_current_menu(void)
+struct Menu *get_current_menu(void)
 {
   return MenuStackCount ? MenuStack[MenuStackCount - 1] : NULL;
 }

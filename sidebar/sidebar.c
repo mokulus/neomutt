@@ -44,6 +44,7 @@
 #include "lib.h"
 #include "context.h"
 #include "format_flags.h"
+#include "index.h"
 #include "mutt_globals.h"
 #include "mutt_menu.h"
 #include "muttlib.h"
@@ -796,6 +797,29 @@ static int calc_path_depth(const char *mbox, const char *delims, const char **la
 }
 
 /**
+ * sidebar_mouse - XXX
+ */
+bool sidebar_mouse(struct MuttWindow *win, struct EventMouse *em)
+{
+  struct SidebarWindowData *wdata = sb_wdata_get(win);
+
+  int index = em->row + wdata->top_index;
+
+  if (index >= wdata->entry_count)
+    return true;
+
+  struct Mailbox *m = wdata->entries[index]->mailbox;
+
+  struct MuttWindow *dlg = dialog_find(win);
+  struct MuttWindow *win_index = mutt_window_find(dlg, WT_INDEX);
+  if (!win_index)
+    return true;
+
+  index_open_mailbox(win, m);
+  return true;
+}
+
+/**
  * draw_sidebar - Write out a list of mailboxes, in a panel
  * @param wdata     Sidebar data
  * @param win       Window to draw on
@@ -1111,6 +1135,7 @@ void sb_win_init(struct MuttWindow *dlg)
   win_sidebar->state.visible = C_SidebarVisible && (C_SidebarWidth > 0);
   win_sidebar->wdata = sb_wdata_new();
   win_sidebar->wdata_free = sb_wdata_free;
+  win_sidebar->mouse = sidebar_mouse;
 
   if (C_SidebarOnRight)
   {
