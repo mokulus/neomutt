@@ -36,6 +36,7 @@ extern struct ListHead SidebarWhitelist;
 struct SbEntry
 {
   char box[256];           ///< Mailbox path (possibly abbreviated)
+  char display[256];       ///< XXX
   int depth;               ///< Indentation depth
   struct Mailbox *mailbox; ///< Mailbox this represents
   bool is_hidden;          ///< Don't show, e.g. $sidebar_new_mail_only
