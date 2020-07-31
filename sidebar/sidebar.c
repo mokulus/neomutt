@@ -110,17 +110,17 @@ static const char *sidebar_format_str(char *buf, size_t buflen, size_t col, int 
 
   switch (op)
   {
-    case 'B':
     case 'D':
-    {
-      char indented[256];
-      size_t offset = add_indent(indented, sizeof(indented), sbe);
-      snprintf(indented + offset, sizeof(indented) - offset, "%s",
-               ((op == 'D') && sbe->mailbox->name) ? sbe->mailbox->name : sbe->box);
+      if (sbe->mailbox->name)
+      {
+        mutt_format_s(buf, buflen, prec, sbe->mailbox->name);
+        break;
+      }
+      /* fallthrough */
 
-      mutt_format_s(buf, buflen, prec, indented);
+    case 'B':
+      mutt_format_s(buf, buflen, prec, sbe->box);
       break;
-    }
 
     case 'd':
       if (!optional)
@@ -1023,8 +1023,13 @@ int sb_recalc(struct MuttWindow *win)
     else if (!C_SidebarFolderIndent)
       entry->depth = 0;
 
-    mutt_str_copy(entry->box, short_path, sizeof(entry->box));
-    make_sidebar_entry(entry->display, sizeof(entry->display), w, entry);
+    size_t blen = sizeof(entry->box);
+    size_t ilen = add_indent(entry->box, blen, entry);
+    if (ilen < blen)
+    {
+      mutt_str_copy(entry->box + ilen, short_path, blen - ilen);
+      make_sidebar_entry(entry->display, sizeof(entry->display), w, entry);
+    }
     row++;
   }
 
@@ -1069,6 +1074,8 @@ int sb_repaint(struct MuttWindow *win)
 
   int w = MIN(num_cols, (C_SidebarWidth - wdata->divider_width));
   fill_empty_space(win, row, num_rows - row, wdata->divider_width, w);
+  draw_divider(wdata, win, num_rows, num_cols);
+
   return 0;
 }
 
@@ -1081,15 +1088,10 @@ int sb_repaint(struct MuttWindow *win)
  */
 void sb_draw(struct MuttWindow *win)
 {
-  if (!C_SidebarVisible || !win)
-    return;
+  if (!mutt_window_is_visible(win))
+    return 0;
 
   struct SidebarWindowData *wdata = sb_wdata_get(win);
-
-  int num_rows = win->state.rows;
-  int num_cols = win->state.cols;
-
-  draw_divider(wdata, win, num_rows, num_cols);
 
   if (!wdata->entries)
   {
@@ -1106,10 +1108,6 @@ void sb_draw(struct MuttWindow *win)
 
   sb_recalc(win);
   sb_repaint(win);
-  // if (prepare_sidebar(wdata, num_rows))
-  //   ; // draw_sidebar(wdata, win, num_rows, num_cols, wdata->divider_width);
-  // else
-  //   fill_empty_space(win, 0, num_rows, wdata->divider_width, num_cols - wdata->divider_width);
 }
 
 /**
