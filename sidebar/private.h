@@ -87,7 +87,7 @@ extern bool  C_SidebarVisible;
 extern short C_SidebarWidth;
 
 // sidebar.c
-void sb_win_init        (struct MuttWindow *dlg);
+struct MuttWindow *sb_win_init(struct MuttWindow *dlg);
 void sb_win_shutdown    (struct MuttWindow *dlg);
 bool select_next        (struct SidebarWindowData *wdata);
 

@@ -283,4 +283,5 @@ void sb_change_mailbox(struct MuttWindow *win, int op)
     default:
       return;
   }
+  win->actions |= WA_RECALC;
 }

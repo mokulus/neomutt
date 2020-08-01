@@ -31,6 +31,7 @@
 #include "private.h"
 #include "mutt/lib.h"
 #include "config/lib.h"
+#include "core/lib.h"
 #include "gui/lib.h"
 #include "lib.h"
 #include "mutt_globals.h"
@@ -201,6 +202,26 @@ static void sb_window_event(struct NotifyCallback *nc, struct MuttWindow *win)
   }
 }
 
+static void sb_init_data(struct MuttWindow *win)
+{
+  struct SidebarWindowData *wdata = sb_wdata_get(win);
+  if (!wdata)
+    return;
+
+  if (wdata->entries)
+    return;
+
+  struct MailboxList ml = STAILQ_HEAD_INITIALIZER(ml);
+  neomutt_mailboxlist_get_all(&ml, NeoMutt, MUTT_MAILBOX_ANY);
+  struct MailboxNode *np = NULL;
+  STAILQ_FOREACH(np, &ml, entries)
+  {
+    if (!(np->mailbox->flags & MB_HIDDEN))
+      sb_notify_mailbox(win, np->mailbox, SBN_CREATED);
+  }
+  neomutt_mailboxlist_clear(&ml);
+}
+
 /**
  * sb_observer - Listen for Events affecting the Sidebar Window - Implements ::observer_t
  * @param nc Notification data
@@ -250,9 +271,14 @@ int sb_insertion_observer(struct NotifyCallback *nc)
     return 0;
 
   if (ew->flags & WN_VISIBLE)
-    sb_win_init(ew->win);
+  {
+    struct MuttWindow *win_sidebar = sb_win_init(ew->win);
+    sb_init_data(win_sidebar);
+  }
   else if (ew->flags & WN_HIDDEN)
+  {
     sb_win_shutdown(ew->win);
+  }
 
   return 0;
 }

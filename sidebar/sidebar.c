@@ -1112,7 +1112,7 @@ void sb_draw(struct MuttWindow *win)
  * sb_win_init - Initialise and insert the Sidebar Window
  * @param dlg Index Dialog
  */
-void sb_win_init(struct MuttWindow *dlg)
+struct MuttWindow *sb_win_init(struct MuttWindow *dlg)
 {
   dlg->orient = MUTT_WIN_ORIENT_HORIZONTAL;
 
@@ -1138,6 +1138,9 @@ void sb_win_init(struct MuttWindow *dlg)
   win_sidebar->wdata = sb_wdata_new();
   win_sidebar->wdata_free = sb_wdata_free;
 
+  win_sidebar->recalc = sb_recalc;
+  win_sidebar->repaint = sb_repaint;
+
   if (C_SidebarOnRight)
   {
     mutt_window_add_child(dlg, cont_right);
@@ -1150,6 +1153,7 @@ void sb_win_init(struct MuttWindow *dlg)
   }
 
   notify_observer_add(NeoMutt->notify, NT_CONFIG, sb_observer, win_sidebar);
+  return win_sidebar;
 }
 
 /**

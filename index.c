@@ -2393,6 +2393,7 @@ int mutt_index_menu(struct MuttWindow *dlg)
       {
         struct MuttWindow *win_sidebar = mutt_window_find(dlg, WT_SIDEBAR);
         change_folder_mailbox(menu, sb_get_highlight(win_sidebar), &oldcount, &cur, false);
+        win_sidebar->actions |= WA_RECALC;
         break;
       }
 #endif
