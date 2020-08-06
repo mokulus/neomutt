@@ -18,12 +18,15 @@ static void handle_selection_change    (struct NotifyCallback* nc)
 
   struct PreviewWindowData *preview_data = preview_wdata_get(win);
 
-  if (data->current_email == preview_data->current_email)
+  if (data->mailbox == preview_data->mailbox &&
+      data->current_email == preview_data->current_email)
   {
     return;
   }
 
+  preview_data->mailbox = data->mailbox;
   preview_data->current_email = data->current_email;
+  compute_mail_preview(preview_data);
   win->actions |= WA_RECALC;
 }
 
@@ -39,13 +42,13 @@ int preview_dialog_observer     (struct NotifyCallback *nc)
   struct MuttWindow *win = nc->global_data;
   win->actions |= WA_RECALC;
 
-  switch(nc->event_type)
+  switch (nc->event_type)
   {
-      default:
-          return 0;
-      case NT_USER_INDEX:
-        handle_selection_change(nc);
-        break;
+    default:
+      return 0;
+    case NT_USER_INDEX:
+      handle_selection_change(nc);
+      break;
   }
   return 0;
 }

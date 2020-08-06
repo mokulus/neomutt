@@ -600,7 +600,7 @@ static bool is_current_email(const struct CurrentEmail *cur, const struct Email 
  * @param e   Email to set as current
  */
 static void set_current_email(struct Notify *notify, struct CurrentEmail *cur,
-                              struct Email *e)
+                              struct Mailbox *mb, struct Email *e)
 {
   *cur = (struct CurrentEmail){
     .e = e,
@@ -610,6 +610,7 @@ static void set_current_email(struct Notify *notify, struct CurrentEmail *cur,
 
   struct IndexEvent ev = {
     .current_email = e,
+    .mailbox = mb,
   };
 
   notify_send(notify, NT_USER_INDEX, NT_USER_EMAIL_SELECTED, &ev);
@@ -1253,7 +1254,7 @@ int mutt_index_menu(struct MuttWindow *dlg)
        * modified underneath us.) */
       int check = mx_mbox_check(Context->mailbox);
 
-      set_current_email(dlg->notify, &cur,
+      set_current_email(dlg->notify, &cur, Context->mailbox,
                         mutt_get_virt_email(Context->mailbox, menu->current));
 
       if (check < 0)
@@ -2602,7 +2603,7 @@ int mutt_index_menu(struct MuttWindow *dlg)
           mutt_check_traditional_pgp(&el, &menu->redraw);
           emaillist_clear(&el);
         }
-        set_current_email(dlg->notify, &cur,
+        set_current_email(dlg->notify, &cur, Context->mailbox,
                           mutt_get_virt_email(Context->mailbox, menu->current));
 
         op = mutt_display_message(win_index, win_ibar, win_pager, win_pbar,
