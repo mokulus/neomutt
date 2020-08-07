@@ -69,6 +69,9 @@
 #ifdef USE_AUTOCRYPT
 #include "autocrypt/lib.h"
 #endif
+#ifdef ENABLE_NLS
+#include <libintl.h>
+#endif
 
 // clang-format off
 /* Values used for comparing addresses. */

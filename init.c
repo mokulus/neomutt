@@ -69,6 +69,14 @@
 #ifdef USE_SIDEBAR
 #include "sidebar/lib.h"
 #endif
+#ifdef USE_AUTOCRYPT
+#include "autocrypt/lib.h"
+#else
+static inline bool config_init_autocrypt(struct ConfigSet *cs)
+{
+  return true;
+}
+#endif
 
 /* Initial string that starts completion. No telling how much the user has
  * typed so far. Allocate 1024 just to be sure! */
