@@ -97,11 +97,11 @@
  * @retval elem Pointer to the element at the given index
  * @retval NULL Index was out of bounds
  * @note Because it is possible to add elements in the middle of the array, it
- * is also possible to retrieve elements that weren't previously explicitely
+ * is also possible to retrieve elements that weren't previously explicitly
  * set. In that case, the memory returned is all zeroes.
  */
 #define ARRAY_GET(head, idx) \
-  ((head)->size > (idx) ? &(head)->entries[(idx)] : NULL)
+  ((head)->size > (idx) ? (head)->entries[(idx)] : NULL)
 
 /**
  * ARRAY_SET - set an element in the array.
@@ -175,7 +175,7 @@
   (FREE(&(head)->entries), (head)->size = (head)->capacity = 0)
 
 /**
- * ARRAY_FOREACH - iterate over all alements of the array
+ * ARRAY_FOREACH - iterate over all elements of the array
  * @param elem Variable to be used as pointer to the element at each iteration
  * @param head Pointer to a struct defined using ARRAY_HEAD
  */
@@ -209,7 +209,7 @@
  * @param from Starting index (inclusive)
  * @param to   Terminating index (exclusive)
  * @note The from and to indexes must be between 0 and ARRAY_SIZE(head); the
- * from index must nost be bigger than to index.
+ * from index must not be bigger than to index.
  */
 #define ARRAY_FOREACH_FROM_TO(elem, head, from, to) \
   for ((elem)  = &(head)->entries[(from)]; \
